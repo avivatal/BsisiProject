@@ -38,6 +38,7 @@ public class HistoryController extends ParentController{
 	public void insertToHistory (@RequestParam("username")    String username,
 			@RequestParam("title")   String title,
 			HttpServletResponse response){
+		
 		System.out.println(username+" "+title);
 		//:TODO your implementation
 		HttpStatus status = HttpStatus.OK;
