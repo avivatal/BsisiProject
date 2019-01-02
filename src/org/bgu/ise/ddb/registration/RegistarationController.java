@@ -161,18 +161,18 @@ public class RegistarationController extends ParentController{
 	public int getNumberOfRegistredUsers(@RequestParam("days") int days) throws IOException{
 		System.out.println(days+"");
 		int result = 0;
-		
+
 		MongoClient client = null;
 		try {
-			
-			client = new MongoClient(localhost, port);
-			MongoCollection table = client.getDatabase("local").getCollection("Users");			
-			MongoCursor allUsersInLastNdays = table.find(Filters.gt("Date", Instant.now().minus(days,ChronoUnit.DAYS))).iterator();
-			while(allUsersInLastNdays.hasNext()) {
-				result++;
-				allUsersInLastNdays.next();
+			if (days > 0) {
+				client = new MongoClient(localhost, port);
+				MongoCollection table = client.getDatabase("local").getCollection("Users");			
+				MongoCursor allUsersInLastNdays = table.find(Filters.gt("Date", Instant.now().minus(days,ChronoUnit.DAYS))).iterator();
+				while(allUsersInLastNdays.hasNext()) {
+					result++;
+					allUsersInLastNdays.next();
+				}
 			}
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -191,12 +191,12 @@ public class RegistarationController extends ParentController{
 	@ResponseBody
 	@org.codehaus.jackson.map.annotate.JsonView(User.class)
 	public  User[] getAllUsers(){
-		
+
 		ArrayList<User> users = new ArrayList();
 		MongoClient client = null;
 
 		try {
-			
+
 			client = new MongoClient(localhost, port);
 			MongoCollection table = client.getDatabase("local").getCollection("Users");			
 			MongoCursor allUsers = table.find().iterator();
@@ -204,7 +204,7 @@ public class RegistarationController extends ParentController{
 				Document user = (Document)allUsers.next();
 				users.add(new User(user.get("Username").toString(),user.get("Password").toString(),user.get("Firstname").toString(),user.get("Lastname").toString()));
 			}
-			
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {

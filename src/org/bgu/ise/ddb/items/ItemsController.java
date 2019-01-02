@@ -69,7 +69,6 @@ public class ItemsController extends ParentController {
 	 */
 	@RequestMapping(value = "fill_media_items", method={RequestMethod.GET})
 	public void fillMediaItems(HttpServletResponse response){
-		System.out.println("was here");
 		HttpStatus status = HttpStatus.OK;
 		MongoClient client = null;
 		ResultSet rs = null;
@@ -138,6 +137,7 @@ public class ItemsController extends ParentController {
             status = HttpStatus.OK;
 		} catch(Exception e) {
 			e.printStackTrace();
+			status = HttpStatus.BAD_REQUEST;
 		} finally {
 			client.close();
 		}
@@ -155,29 +155,59 @@ public class ItemsController extends ParentController {
 	@RequestMapping(value = "get_topn_items",headers="Accept=*/*", method={RequestMethod.GET},produces="application/json")
 	@ResponseBody
 	@org.codehaus.jackson.map.annotate.JsonView(MediaItems.class)
-	public  MediaItems[] getTopNItems(@RequestParam("topn")    int topN){
-		//:TODO your implementation
-		
+	public  MediaItems[] getTopNItems(@RequestParam("topn")    int topN){	
 		ArrayList<MediaItems> movies = new ArrayList();
 		MongoClient client = null;
 		int counter = 0;
 		try {
-			
-			client = new MongoClient(localhost, port);
-			MongoCollection table = client.getDatabase("local").getCollection("MediaItems");			
-			MongoCursor allmovies = table.find().iterator();
-			while(allmovies.hasNext() && counter<topN) {
-				Document user = (Document)allmovies.next();
-				movies.add(new MediaItems(user.get("Title").toString(),Integer.parseInt(user.get("Prod_Year").toString())));
-				counter++;
+			if (topN > 0) {
+				client = new MongoClient(localhost, port);
+				MongoCollection table = client.getDatabase("local").getCollection("MediaItems");			
+				MongoCursor allmovies = table.find().iterator();
+				while(allmovies.hasNext() && counter<topN) {
+					Document user = (Document)allmovies.next();
+					movies.add(new MediaItems(user.get("Title").toString(),Integer.parseInt(user.get("Prod_Year").toString())));
+					counter++;
+				}
 			}
-			
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			client.close();
 		}
 		return movies.toArray(new MediaItems[movies.size()]);
+	}
+	
+	/**
+	 * The function returns true if the received title exist in the system otherwise false
+	 * @param username
+	 * @return
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "is_exist_movie", method={RequestMethod.GET})
+	public boolean isExistMovie(@RequestParam("title") String title) throws IOException{
+		boolean result = false;
+		MongoClient client = null;
+
+		try {
+			client = new MongoClient(localhost, port);
+			MongoCollection table = client.getDatabase("local").getCollection("MediaItems");
+			Document res = new Document();
+			res.append("Title", title);
+			MongoCursor iterator = table.find(res).iterator();
+
+			while(iterator.hasNext()) {
+				result = true;
+				break;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			client.close();
+		}
+		return result;
+
 	}
 		
 

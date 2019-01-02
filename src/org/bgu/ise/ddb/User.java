@@ -99,8 +99,8 @@ public class User {
 				+ ", firstName=" + firstName + ", lastName=" + lastName + "]";
 	}
 	
-	
-	
-	
-
+	@Override
+	public int hashCode() {
+		return username.hashCode();
+	}
 }
